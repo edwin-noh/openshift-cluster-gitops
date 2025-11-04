@@ -1,0 +1,43 @@
+# OpenShift GitOps
+
+## 1. namespace
+
+``` yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-gitops-operator
+  annotations:
+    openshift.io/display-name: "OpenShift GitOps Operator"
+  labels:
+    openshift.io/cluster-monitoring: 'true'
+```
+
+## 2. operator group
+
+``` yaml
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: openshift-gitops-operator
+  namespace: openshift-gitops-operator
+spec:
+  upgradeStrategy: Default
+```
+
+## 3. subscription
+
+``` yaml
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-gitops-operator
+  namespace: openshift-gitops-operator
+spec:
+  channel: latest 
+  installPlanApproval: Automatic
+  name: openshift-gitops-operator 
+  source: redhat-operators 
+  sourceNamespace: openshift-marketplace 
+```
+

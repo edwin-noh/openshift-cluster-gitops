@@ -1,3 +1,43 @@
+# Edwin's OpenShift GitOps
+
+## 컨셉
+1. 다양한 용도와 버전의 클러스터 인스턴스를 필요에 따라 bootstrapping 한다. (RHOAI, RHADS, kafka클러스터 등)
+2. 초기 스크립트는 Ansible을 통해 수행되며 이 후는 OpenShift GitOps(ArgoCD)를 통해 provisioning
+3. 각 버전의 클러스터에 오퍼레이터 설치는 간략하게 설정할 수 있도록 공통화
+
+## Pre-requsite
+1. OpenShift 설치는 이전 단계에서 완료되었음
+2. bootstraping 스크립트를 통해 openshift-gitops operator와 argocd instance는 설치되었음 (components/operator/openshift-gitops)
+3. IaC를 위한 git repository 연결은 완료되었음
+(>> 이건 어디에서?)
+## 기본 구조
+1. bootstrap
+2. clusters
+3. operators
+- 기본적인 operator는 
+## 클러스터 정의
+0. 공통
+- operator
+  - base : 기본적인 subscription
+  - components : 컴포넌트 설정
+  - overlays : 버전 오버레이
+
+- ** openshift-gitops **
+1. Operator 설치
+/components/operators/openshift-gitops/operator 에서 설치
+2. git연결(github에서는 필요없음) 및 controller권한 설정
+/components/operators/openshift-gitops/components 에서 설정
+** 이건 부트스트랩에서 설정 **
+3. nfs-provisioner
+> [!WARNING]
+> 클러스터 별로 sub-directory를 구별
+
+## 클러스터 별 설정
+### 1. rhocp-app
+
+- openshift-pipeline
+- openshift-
+기본 오픈시프트 
 # Red Hat OpenShift Day2 GitOps
 
 ## Usecase
