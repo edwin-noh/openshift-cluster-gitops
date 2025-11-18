@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: cluster-operators
+  name: cluster-configs
   namespace: openshift-gitops
   annotations:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
@@ -18,9 +18,9 @@ spec:
         argocd.argoproj.io/compare-options: IgnoreExtraneous
         argocd.argoproj.io/sync-options: Prune=false
       labels:
-        gitops: operator
+        gitops: cluster-config
     spec:
-      project: default
+      project: cluster-config
       syncPolicy:
         automated:
           prune: false
@@ -32,7 +32,7 @@ spec:
             factor: 2
             maxDuration: 20m
       source:
-        repoURL: https://github.com/edwin-noh/rhoai.git
+        repoURL: patch-me-see-clusters-overlays
         targetRevision: patch-me-see-clusters-overlays
         path: '{{values.path}}'
       destination:

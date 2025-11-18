@@ -2,5 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  # - cluster-config-appofapps.yaml
-  - applicationset.yaml
+  - cluster-config-app-of-apps.yaml
+  - cluster-configs-applicationset.yaml
+  - cluster-operators-applicationset.yaml

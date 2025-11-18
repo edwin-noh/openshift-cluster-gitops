@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: operators-config
+  name: cluster-config
   namespace: openshift-gitops
 spec:
   clusterResourceWhitelist:

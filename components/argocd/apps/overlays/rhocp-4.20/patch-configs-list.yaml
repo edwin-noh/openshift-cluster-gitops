@@ -1,0 +1,13 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-configs
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: local
+        url: https://kubernetes.default.svc
+        values:
+          name: nfs-provisioner
+          path: components/cluster-configs/nfs-provisioner/overlays/rhocp-4.20

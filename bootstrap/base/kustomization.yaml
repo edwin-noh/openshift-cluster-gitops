@@ -2,5 +2,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 # 원래는 gitops 인스턴스 설정, 스크립트를 통해 openshift-gitops operator를 설치하고 설정을 이걸 통해서
-resources:
- - ../../components/operators/openshift-gitops/instance/overlays/default
+# resources:
+#  - ../../components/operators/openshift-gitops/instance/overlays/default

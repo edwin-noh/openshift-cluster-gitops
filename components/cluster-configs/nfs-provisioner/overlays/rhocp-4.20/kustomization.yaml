@@ -3,6 +3,9 @@ kind: Kustomization
 
 resources:
   - ../base
+  - namespace.yaml
+
+namespace: nfs-provisioner
 
 patches:
   - target:

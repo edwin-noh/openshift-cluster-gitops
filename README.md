@@ -15,6 +15,28 @@
 2. clusters
 3. operators
 - 기본적인 operator는 
+
+## 워크플로우
+1. 부트스트래핑 스크립트
+  GitOps Operator 설치 -> bootstrap 폴더의 오버레이 oc apply
+2. 부트스트래핑 kustomize
+  - GitOps instance customizing(BASE) - 예를 들면, ArgoCD app controller에 cluster-admin role binding
+  - bootstrap -> cluster 폴더의 overlay 호출 (OVERLAY, 같은 조건의 폴더 예를 들면, rhoai2.22 오버레이)
+3. Cluster kustomize 폴더
+  - ArgoCD project 설정 (BASE) -> components/argocd/projects
+  - ** ArgoCD application 설정(OVERLAY) ** -> components/argocd/apps ++ application에 정의된 repoURL을 복사
+4. ArgoCD app 설정 (components/argocd/apps/overlay/{DESIRE CLUSTER})
+  4.1. BASE
+    - app of apps: giturl이 정의되어 있음, 이걸 애플리케이션 셋에서 replacement
+    - applicationset (cluster config) - user monitoring등과 같은 클러스터 컨피그
+    - applicationset (operator) - 클러스터 특성에 맞는 오퍼레이터 설치
+  4.2. OVERLAY
+    - app of apps: 클러스터 config관련 app of app (components/argocd/apps/overlay/{DESIRE CLUSTER})
+    - applicationset (cluster config) - applicationset의 list형태로 관리
+    - applicationset (operator) - list형태로 관리 operator
+
+중요한 컨셉은 베이스 폴더에 들어 있거나 kustomize에서 참조하는 부분은 변경이 거의 없는 부분...app project구성등과 같은...
+
 ## 클러스터 정의
 0. 공통
 - operator
@@ -33,7 +55,7 @@
 > 클러스터 별로 sub-directory를 구별
 
 ## 클러스터 별 설정
-### 1. rhocp-app
+### 1. rhocp (기본 argocd + pipeline)
 
 - openshift-pipeline
 - openshift-
