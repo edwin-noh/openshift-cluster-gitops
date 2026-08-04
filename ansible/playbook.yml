@@ -1,0 +1,20 @@
+---
+- name: RHEL8 KVM 기반 OpenShift SNO 구축 및 GitOps 부트스트랩 자동화 플레이북
+  hosts: hypervisors
+  become: yes
+  vars_files:
+    - vars/main.yml
+    - vars/vault.yml
+
+  roles:
+    # 1단계: RHEL8 가상화 서버 환경 설정 (스토리지, 네트워크)
+    - role: kvm_setup
+      tags: kvm
+
+    # 2단계: 최신 OpenShift 4.16 SNO 기동 및 설치 완료 대기
+    - role: openshift_sno
+      tags: sno
+
+    # # 3단계: OpenShift GitOps Operator 기동 및 bootstrap Application 연동
+    # - role: openshift_gitops
+    #   tags: gitops

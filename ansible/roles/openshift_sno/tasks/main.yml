@@ -1,0 +1,128 @@
+---
+# 1. OpenShift CLI 및 Installer 도구 다운로드
+- name: SNO 설치 디렉토리 생성
+  file:
+    path: "/root/sno-install"
+    state: directory
+    mode: '0755'
+  tags: sno_prepare
+
+#기본적으로 rhel9용으로 다운로드 됨                  
+- name: OpenShift 클라이언트(oc) 다운로드 및 압축 해제
+  unarchive:
+    src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/{{ openshift_release_channel }}/openshift-client-linux-amd64-rhel8-4.22.6.tar.gz"
+    dest: "/usr/local/bin"
+    remote_src: yes
+    exclude:
+      - README.md
+  tags: sno_prepa
+
+- name: OpenShift Installer 다운로드 및 압축 해제
+  unarchive:
+    src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/{{ openshift_release_channel }}/openshift-install-linux.tar.gz"
+    dest: "/root/sno-install"
+    remote_src: yes
+  tags: sno_prepare
+
+# 2. OpenShift 설정 템플릿 생성
+- name: install-config.yaml 파일 생성
+  template:
+    src: install-config.yaml.j2
+    dest: "/root/sno-install/install-config.yaml"
+    mode: '0600'
+  tags: sno_config
+
+- name: agent-config.yaml 파일 생성
+  template:
+    src: agent-config.yaml.j2
+    dest: "/root/sno-install/agent-config.yaml"
+    mode: '0600'
+  tags: sno_config
+
+# 3. Agent-based Installer ISO 생성
+- name: qemu 사용자가 ISO에 접근할 수 있도록 /root 디렉토리 권한 설정
+  file:
+    path: /root
+    mode: '0711'
+  tags: sno_image
+
+- name: Agent 설치 부팅 ISO 이미지 생성 여부 확인
+  stat:
+    path: "/root/sno-install/agent.x86_64.iso"
+  register: iso_stat
+  tags: sno_image
+
+- name: Agent-based Installer 부팅 ISO 이미지 생성
+  command: "/root/sno-install/openshift-install agent create image --dir=/root/sno-install"
+  when: not iso_stat.stat.exists
+  tags: sno_image
+
+# 4. KVM 가상머신(SNO) 기동
+- name: 기존 가상머신 기동 여부 확인
+  shell: "virsh domstate {{ sno_vm_name }}"
+  register: vm_check
+  failed_when: false
+  changed_when: false
+  tags: sno_provision
+
+- name: 기존 가상머신이 존재할 경우 삭제 (재설치 프로세스 보장)
+  shell: |
+    virsh destroy {{ sno_vm_name }}
+    virsh undefine {{ sno_vm_name }} --remove-all-storage
+  when: vm_check.rc == 0
+  tags: sno_provision
+  ignore_errors: yes
+
+- name: SNO 가상머신(virt-install) 설치 및 기동
+  # Agent ISO는 cdrom 디바이스로 연결한다(--location 은 네트워크 설치 트리용이라 ISO 부팅 불가).
+  # --boot hd,cdrom: 빈 디스크는 첫 부팅에서 cdrom(설치 ISO)으로 떨어지고, 설치 후 디스크가
+  # 부팅 가능해지면 hd로 부팅된다(ISO 재부팅 루프 방지). 디스크는 virt-install이 생성/소유한다.
+  shell: |
+    virt-install \
+      --name={{ sno_vm_name }} \
+      --vcpus={{ sno_vcpu }} \
+      --memory={{ sno_memory_mb }} \
+      --disk pool={{ kvm_storage_pool_name }},size={{ kvm_sno_vol_size | regex_replace('[Gg]$','') }},format=qcow2,bus=virtio \
+      --disk path=/root/sno-install/agent.x86_64.iso,device=cdrom \
+      --network bridge={{ kvm_bridge_interface }},model=virtio,mac={{ sno_mac_address }} \
+      --boot hd,cdrom,menu=on \
+      --graphics none \
+      --noautoconsole \
+      --os-variant=rhel9.0
+  tags: sno_provision
+
+# - name: 하이퍼바이저 /etc/hosts에 SNO 클러스터 도메인 등록 (oc / wait-for DNS 해석용)
+#   # 플레이북은 하이퍼바이저에서 oc/openshift-install 을 실행하므로 api/apps 도메인이
+#   # SNO 노드 IP로 해석되어야 한다. (와일드카드 불가 → 필요한 호스트명을 명시)
+#   blockinfile:
+#     path: /etc/hosts
+#     marker: "# {mark} ANSIBLE MANAGED: {{ sno_cluster_name }}"
+#     block: |
+#       {{ sno_ip_address }} api.{{ sno_cluster_name }}.{{ sno_base_domain }}
+#       {{ sno_ip_address }} api-int.{{ sno_cluster_name }}.{{ sno_base_domain }}
+#       {{ sno_ip_address }} oauth-openshift.apps.{{ sno_cluster_name }}.{{ sno_base_domain }}
+#       {{ sno_ip_address }} console-openshift-console.apps.{{ sno_cluster_name }}.{{ sno_base_domain }}
+#   tags: sno_provision
+
+# 5. OpenShift 설치 완료 대기
+- name: OpenShift SNO 설치 완료 대기 (최대 40~50분 소요 가능)
+  command: "/root/sno-install/openshift-install agent wait-for install-complete --dir=/root/sno-install --log-level=info"
+  async: 3600  # 1시간 대기 제한
+  poll: 30
+  tags: sno_wait
+
+# 6. kubeconfig 설정 복사
+# - name: Kube config 디렉토리 생성
+#   file:
+#     path: "/root/.kube"
+#     state: directory
+#     mode: '0700'
+#   tags: sno_post
+
+# - name: SNO 클러스터 kubeconfig 복사
+#   copy:
+#     src: "/root/sno-install/auth/kubeconfig"
+#     dest: "/root/.kube/config"
+#     remote_src: yes
+#     mode: '0600'
+#   tags: sno_post

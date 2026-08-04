@@ -1,0 +1,83 @@
+---
+# 1. OpenShift GitOps Operator 설치
+- name: GitOps Operator 전용 네임스페이스 생성
+  shell: "oc create namespace openshift-gitops-operator"
+  register: ns_create
+  failed_when: false
+  changed_when: "ns_create.rc == 0"
+  tags: gitops_install
+
+- name: 네임스페이스 모니터링 활성화 라벨 추가
+  shell: "oc label namespace openshift-gitops-operator openshift.io/cluster-monitoring=true"
+  failed_when: false
+  tags: gitops_install
+
+- name: Subscription 템플릿 임시 디렉토리에 렌더링
+  template:
+    src: subscription.yaml.j2
+    dest: "/tmp/gitops-subscription.yaml"
+    mode: '0600'
+  tags: gitops_install
+
+- name: GitOps Operator Subscription 배포
+  shell: "oc apply -f /tmp/gitops-subscription.yaml"
+  tags: gitops_install
+
+- name: GitOps CSV(ClusterServiceVersion) Succeeded 될 때까지 대기
+  # failed_when:false 로 전송 오류/미생성 시에도 재시도를 계속하고,
+  # 최종 판정은 아래 assert 에서 명확히 한다(조용한 실패 방지).
+  shell: "oc get csv -n openshift-gitops-operator -o jsonpath='{.items[0].status.phase}'"
+  register: csv_phase
+  until: csv_phase.stdout == "Succeeded"
+  retries: 40
+  delay: 15
+  changed_when: false
+  failed_when: false
+  tags: gitops_wait
+
+- name: GitOps Operator 설치 검증
+  assert:
+    that: csv_phase.stdout == "Succeeded"
+    fail_msg: "OpenShift GitOps Operator CSV가 Succeeded 가 아닙니다 (현재: '{{ csv_phase.stdout }}'). operator 설치 실패."
+  tags: gitops_wait
+
+- name: 임시 Subscription 파일 정리
+  file:
+    path: "/tmp/gitops-subscription.yaml"
+    state: absent
+  tags: gitops_install
+
+# 2. Argo CD 인스턴스 준비 및 기동 대기
+- name: Argo CD 서버 Pod 기동 완료 대기
+  shell: "oc get pods -l app.kubernetes.io/name=openshift-gitops-server -n openshift-gitops -o jsonpath='{.items[0].status.phase}'"
+  register: pod_phase
+  until: pod_phase.stdout == "Running"
+  retries: 40
+  delay: 15
+  changed_when: false
+  failed_when: false
+  tags: gitops_wait
+
+- name: Argo CD 서버 Pod 기동 검증
+  assert:
+    that: pod_phase.stdout == "Running"
+    fail_msg: "Argo CD 서버 Pod가 Running 이 아닙니다 (현재: '{{ pod_phase.stdout }}'). ArgoCD 인스턴스 기동 실패."
+  tags: gitops_wait
+
+# 3. Bootstrap Application 등록
+- name: Bootstrap Application 템플릿 임시 디렉토리에 렌더링
+  template:
+    src: bootstrap-app.yaml.j2
+    dest: "/tmp/bootstrap-app.yaml"
+    mode: '0600'
+  tags: gitops_bootstrap
+
+- name: Argo CD에 Bootstrap Application 등록 (GitOps 부트스트래핑 시작)
+  shell: "oc apply -f /tmp/bootstrap-app.yaml"
+  tags: gitops_bootstrap
+
+- name: 임시 Bootstrap Application 파일 정리
+  file:
+    path: "/tmp/bootstrap-app.yaml"
+    state: absent
+  tags: gitops_bootstrap
