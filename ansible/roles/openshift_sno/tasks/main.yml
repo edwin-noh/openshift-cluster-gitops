@@ -24,6 +24,21 @@
     remote_src: yes
   tags: sno_prepare
 
+- name: Kustomize 설치 여부 확인
+  command: kustomize version
+  register: kustomize_check
+  failed_when: false
+  changed_when: false
+  tags: sno_prepare
+
+- name: Kustomize 다운로드 및 설치
+  unarchive:
+    src: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.6.0/kustomize_v5.6.0_linux_amd64.tar.gz"
+    dest: "/usr/local/bin"
+    remote_src: yes
+  when: kustomize_check.rc != 0
+  tags: sno_prepare
+
 # 2. OpenShift 설정 템플릿 생성
 - name: install-config.yaml 파일 생성
   template:
@@ -112,17 +127,101 @@
   tags: sno_wait
 
 # 6. kubeconfig 설정 복사
-# - name: Kube config 디렉토리 생성
-#   file:
-#     path: "/root/.kube"
-#     state: directory
-#     mode: '0700'
-#   tags: sno_post
+- name: Kube config 디렉토리 생성
+  file:
+    path: "/root/.kube"
+    state: directory
+    mode: '0700'
+  tags: sno_post
 
-# - name: SNO 클러스터 kubeconfig 복사
-#   copy:
-#     src: "/root/sno-install/auth/kubeconfig"
-#     dest: "/root/.kube/config"
-#     remote_src: yes
-#     mode: '0600'
-#   tags: sno_post
+- name: SNO 클러스터 kubeconfig 복사
+  copy:
+    src: "/root/sno-install/auth/kubeconfig"
+    dest: "/root/.kube/config"
+    remote_src: yes
+    mode: '0600'
+  tags: sno_post
+
+# 7. Ansible 자동화용 ServiceAccount 생성 및 kubeadmin 삭제
+- name: ansible-admin ServiceAccount 생성
+  shell: "oc create sa {{ sno_ansible_sa_name }} -n {{ sno_ansible_sa_namespace }}"
+  register: sa_create
+  failed_when: false
+  changed_when: sa_create.rc == 0
+  tags: sno_post
+
+- name: ansible-admin에 cluster-admin 역할 바인딩
+  shell: "oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:{{ sno_ansible_sa_namespace }}:{{ sno_ansible_sa_name }}"
+  register: crb_create
+  failed_when: false
+  changed_when: crb_create.rc == 0
+  tags: sno_post
+
+- name: ansible-admin 장기 토큰 Secret 생성
+  shell: |
+    oc apply -f - <<'EOF'
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ sno_ansible_sa_name }}-token
+      namespace: {{ sno_ansible_sa_namespace }}
+      annotations:
+        kubernetes.io/service-account.name: {{ sno_ansible_sa_name }}
+    type: kubernetes.io/service-account-token
+    EOF
+  register: secret_create
+  failed_when: false
+  changed_when: secret_create.rc == 0
+  tags: sno_post
+
+- name: 토큰 Secret 데이터 채워질 때까지 대기
+  shell: "oc get secret {{ sno_ansible_sa_name }}-token -n {{ sno_ansible_sa_namespace }} -o jsonpath='{.data.token}'"
+  register: sa_token_b64
+  until: sa_token_b64.stdout | length > 0
+  retries: 10
+  delay: 5
+  changed_when: false
+  tags: sno_post
+
+- name: 토큰 디코딩
+  shell: "echo '{{ sa_token_b64.stdout }}' | base64 -d"
+  register: sa_token
+  changed_when: false
+  tags: sno_post
+
+- name: API 서버 URL 추출
+  shell: "oc whoami --show-server"
+  register: api_server
+  changed_when: false
+  tags: sno_post
+
+- name: ansible-admin 전용 kubeconfig 생성
+  shell: |
+    oc config set-cluster {{ sno_cluster_name }} \
+      --server={{ api_server.stdout }} \
+      --certificate-authority=/root/sno-install/auth/ca.crt \
+      --embed-certs=true \
+      --kubeconfig=/root/.kube/ansible-admin.kubeconfig
+    oc config set-credentials {{ sno_ansible_sa_name }} \
+      --token={{ sa_token.stdout }} \
+      --kubeconfig=/root/.kube/ansible-admin.kubeconfig
+    oc config set-context {{ sno_ansible_sa_name }}@{{ sno_cluster_name }} \
+      --cluster={{ sno_cluster_name }} \
+      --user={{ sno_ansible_sa_name }} \
+      --kubeconfig=/root/.kube/ansible-admin.kubeconfig
+    oc config use-context {{ sno_ansible_sa_name }}@{{ sno_cluster_name }} \
+      --kubeconfig=/root/.kube/ansible-admin.kubeconfig
+  tags: sno_post
+
+- name: ansible-admin kubeconfig 권한 설정
+  file:
+    path: "/root/.kube/ansible-admin.kubeconfig"
+    mode: '0600'
+  tags: sno_post
+
+- name: ansible-admin kubeconfig를 로컬(컨트롤 노드)로 가져오기
+  fetch:
+    src: "/root/.kube/ansible-admin.kubeconfig"
+    dest: "{{ playbook_dir }}/.kubeconfig/ansible-admin.kubeconfig"
+    flat: yes
+  tags: sno_post
