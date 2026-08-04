@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 클러스터(rhocp-4.20) 전용 추가 Application/설정 확장점.
+# cluster-config-app-of-apps Application이 이 경로를 가리킨다.
+# 현재는 비어 있으며(정상 동기화), 필요 시 per-cluster Application/manifest를 추가한다.
+resources: []

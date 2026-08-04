@@ -1,0 +1,10 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-configs
+spec:
+  generators:
+  - list:
+      # rhoai-2.19 클러스터는 현재 별도 cluster-config 컴포넌트가 없다.
+      # 필요 시(MinIO 등) 아래 elements에 추가한다.
+      elements: []

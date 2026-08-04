@@ -12,7 +12,7 @@ spec:
   project: cluster-config
   source:
     path: patch-me-see-overlays
-    repoURL: https://github.com/edwin-noh/openshift-gitops.git
+    repoURL: https://github.com/edwin-noh/openshift-cluster-gitops.git
     targetRevision: main
   syncPolicy:
     automated:

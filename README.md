@@ -6,6 +6,15 @@
 3. 각 버전의 클러스터에 오퍼레이터 설치는 간략하게 설정할 수 있도록 공통화
 
 ## Pre-requsite
+1. Ansible 환경 구성
+```
+uv venv
+source .venv/bin/activate
+#uv pip install ansible-core
+uv pip install 'ansible-core>=2.16,<2.17
+#ansible-galaxy collection install community.libvirt
+```
+
 1. OpenShift 설치는 이전 단계에서 완료되었음
 2. bootstraping 스크립트를 통해 openshift-gitops operator와 argocd instance는 설치되었음 (components/operator/openshift-gitops)
 3. IaC를 위한 git repository 연결은 완료되었음
