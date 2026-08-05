@@ -5,4 +5,4 @@ metadata:
     openshift.io/display-name: "Red Hat OpenShift AI"
   labels:
     openshift.io/cluster-monitoring: 'true'
-  name: redhat-ods-operator 
+  name: redhat-ods-operator
