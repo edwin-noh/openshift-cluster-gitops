@@ -10,7 +10,7 @@ spec:
       mappingMethod: claim
       type: GitHub
       github:
-        clientID: CHANGE_ME
+        clientID: Ov23li1Zu2XgPVMWBHtI
         clientSecret:
           name: github-oauth-secret
         organizations: []
