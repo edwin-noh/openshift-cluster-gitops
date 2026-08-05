@@ -7,10 +7,9 @@ metadata:
 spec:
   identityProviders:
     - name: github
-      mappingMethod: claim
+      mappingMethod: lookup
       type: GitHub
       github:
         clientID: Ov23li1Zu2XgPVMWBHtI
         clientSecret:
           name: github-oauth-secret
-        organizations: []
