@@ -57,7 +57,50 @@
     fail_msg: "Argo CD 서버 Pod가 Running 이 아닙니다 (현재: '{{ pod_phase.stdout }}'). ArgoCD 인스턴스 기동 실패."
   tags: gitops_wait
 
-# 3. Bootstrap Application 등록
+# 3. GitHub OAuth 설정을 Git 저장소에 반영 후 Push
+- name: SealedSecret 파일 존재 여부 확인
+  stat:
+    path: "{{ playbook_dir }}/.tmp/github-oauth-sealedsecret.yaml"
+  register: sealed_secret_file
+  tags: gitops_bootstrap
+
+- name: SealedSecret 매니페스트를 Git 저장소에 복사
+  copy:
+    src: "{{ playbook_dir }}/.tmp/github-oauth-sealedsecret.yaml"
+    dest: "{{ playbook_dir }}/../components/cluster-configs/github-oauth/base/github-secret-sealedsecret.yaml"
+  when: sealed_secret_file.stat.exists
+  tags: gitops_bootstrap
+
+- name: OAuth CR에 GitHub Client ID 설정
+  replace:
+    path: "{{ playbook_dir }}/../components/cluster-configs/github-oauth/base/oauth.yaml"
+    regexp: 'clientID: .*'
+    replace: "clientID: {{ github_oauth_client_id }}"
+  when: sealed_secret_file.stat.exists and github_oauth_client_id != "CHANGE_ME"
+  tags: gitops_bootstrap
+
+- name: GitHub OAuth 변경사항 Git Commit & Push
+  shell: |
+    cd {{ playbook_dir }}/..
+    git add components/cluster-configs/github-oauth/
+    if git diff --cached --quiet; then
+      echo "No changes to commit"
+    else
+      git commit -m "chore: update GitHub OAuth sealed secret and client ID"
+      git push origin {{ gitops_repo_branch }}
+    fi
+  register: git_push_result
+  when: sealed_secret_file.stat.exists
+  tags: gitops_bootstrap
+
+- name: 임시 SealedSecret 파일 정리
+  file:
+    path: "{{ playbook_dir }}/.tmp/github-oauth-sealedsecret.yaml"
+    state: absent
+  when: sealed_secret_file.stat.exists
+  tags: gitops_bootstrap
+
+# 4. Bootstrap Application 등록
 - name: Bootstrap Application 템플릿 렌더링
   template:
     src: bootstrap-app.yaml.j2
@@ -77,12 +120,12 @@
     state: absent
   tags: gitops_bootstrap
 
-# 4. kubeadmin 계정 삭제
-- name: kubeadmin 계정 삭제
-  shell: "oc delete secret kubeadmin -n kube-system"
-  environment:
-    KUBECONFIG: "{{ gitops_kubeconfig }}"
-  register: kubeadmin_delete
-  failed_when: false
-  changed_when: kubeadmin_delete.rc == 0
-  tags: gitops_bootstrap
+# 5. kubeadmin 계정 삭제 (보류)
+# - name: kubeadmin 계정 삭제
+#   shell: "oc delete secret kubeadmin -n kube-system"
+#   environment:
+#     KUBECONFIG: "{{ gitops_kubeconfig }}"
+#   register: kubeadmin_delete
+#   failed_when: false
+#   changed_when: kubeadmin_delete.rc == 0
+#   tags: gitops_bootstrap
