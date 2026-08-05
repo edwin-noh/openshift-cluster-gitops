@@ -100,7 +100,20 @@
   when: sealed_secret_file.stat.exists
   tags: gitops_bootstrap
 
-# 4. Bootstrap Application 등록
+# 4. GitHub OAuth 사용자 사전 등록 (lookup 방식)
+- name: GitHub OAuth 사용자 프로비저닝 (User + Identity + Mapping + cluster-admin)
+  shell: |
+    oc create user {{ item }} || true
+    oc create identity github:{{ item }} || true
+    oc create useridentitymapping github:{{ item }} {{ item }} || true
+    oc adm policy add-cluster-role-to-user cluster-admin {{ item }}
+  environment:
+    KUBECONFIG: "{{ gitops_kubeconfig }}"
+  loop: "{{ github_oauth_users | default([]) }}"
+  when: github_oauth_users is defined and github_oauth_users | length > 0
+  tags: gitops_bootstrap
+
+# 5. Bootstrap Application 등록
 - name: Bootstrap Application 템플릿 렌더링
   template:
     src: bootstrap-app.yaml.j2
@@ -120,7 +133,7 @@
     state: absent
   tags: gitops_bootstrap
 
-# 5. kubeadmin 계정 삭제 (보류)
+# 6. kubeadmin 계정 삭제 (보류)
 # - name: kubeadmin 계정 삭제
 #   shell: "oc delete secret kubeadmin -n kube-system"
 #   environment:
