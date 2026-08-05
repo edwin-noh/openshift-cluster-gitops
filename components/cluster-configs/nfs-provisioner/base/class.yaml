@@ -4,6 +4,7 @@ metadata:
   name: nfs-client
   annotations:
     argocd.argoproj.io/sync-options: Replace=true
+    storageclass.kubernetes.io/is-default-class: "true"
 provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
 parameters:
   onDelete: delete
