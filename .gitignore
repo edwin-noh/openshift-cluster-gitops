@@ -21,7 +21,7 @@ vars/
 
 # OpenShift / 설치 산출물 (비밀정보 포함)
 sno-install/
-auth/
+# auth/
 kubeconfig
 *.kubeconfig
 .kube/
