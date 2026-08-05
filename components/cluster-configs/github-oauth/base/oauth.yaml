@@ -1,0 +1,16 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true
+spec:
+  identityProviders:
+    - name: github
+      mappingMethod: claim
+      type: GitHub
+      github:
+        clientID: CHANGE_ME
+        clientSecret:
+          name: github-oauth-secret
+        organizations: []

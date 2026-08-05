@@ -7,6 +7,14 @@ resources:
   - ../../base
   - ../../../components/argocd/apps/overlays/rhoai-3.4
 
+
+
+configMapGenerator:
+  - name: gitops-repo-config
+    literals:
+      - repoURL=https://github.com/edwin-noh/openshift-cluster-gitops.git
+      - targetRevision=main
+
 replacements:
   # copy the repo from the application to the applicationsets
   - source:
@@ -26,3 +34,20 @@ replacements:
           kind: ApplicationSet
         fieldPaths:
           - spec.template.spec.source.targetRevision
+
+# patches:
+#   # Uncomment to disable automatic sync (manual sync only)
+#   - patch: |-
+#       - op: remove
+#         path: /spec/template/spec/syncPolicy
+#     target:
+#       group: argoproj.io
+#       version: v1alpha1
+#       kind: ApplicationSet
+#   - patch: |-
+#       - op: remove
+#         path: /spec/syncPolicy
+#     target:
+#       group: argoproj.io
+#       version: v1alpha1
+#       kind: Application
