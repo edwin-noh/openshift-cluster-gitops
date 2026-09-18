@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/source/path
+  value: clusters/overlays/rhoai-3.5/cluster-config

@@ -12,13 +12,6 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Ansible
-*.retry
-ansible/*.retry
-# 복호화된 vault(평문 비밀정보)는 절대 커밋 금지 — 암호화 후에만 추적
-# vars/vault.yml 은 ansible-vault 로 암호화한 경우에만 커밋할 것
-vars/
-
 # OpenShift / 설치 산출물 (비밀정보 포함)
 sno-install/
 # auth/
