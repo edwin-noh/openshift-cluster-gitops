@@ -5,6 +5,7 @@ components:
   - ./copy-trusted-ca
 
 resources:
+  - namespace.yaml
   - ca-clusterissuer.yaml
   - cluster-proxy.yaml
   - selfsigned-certificate.yaml

@@ -1,0 +1,8 @@
+---
+# The cert-manager operator creates this namespace itself, but this Application
+# syncs ClusterIssuer/Certificate/Job objects into it and would fail until the
+# operator gets there first. Declaring it here removes that ordering dependency.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager

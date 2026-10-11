@@ -6,6 +6,10 @@ metadata:
   name: default-dsc
 spec:
   components:
+    aigateway:
+      managementState: Removed
+      modelsAsAService:
+        managementState: Removed
     aipipelines:
       managementState: Removed
     dashboard:

@@ -5,7 +5,10 @@ resources:
   - ../../base
 
 components:
-  - ../../components/components-aigateway-maas
+  # MaaS (components-aigateway-maas / gateway-maas / maas-postgres-cnpg) is left out:
+  # its Gateway requires the `cert-manager-ingress-cert` secret in openshift-ingress,
+  # which only exists on RHDP sandbox clusters. Dropping it also removes the
+  # CloudNativePG / External Secrets / Kuadrant footprint, which this SNO does not need.
   - ../../components/components-aipipelines
   - ../../components/components-feast
   - ../../components/components-kserve
@@ -24,8 +27,6 @@ components:
   - ../../components/disable-gaudi-runtimes
   - ../../components/disable-ibm-runtimes
   - ../../components/gateway-inference
-  - ../../components/gateway-maas
   - ../../components/hardware-profiles-nvidia-gpu
   - ../../components/idle-notebook-culling
-  - ../../components/maas-postgres-cnpg
   - ../../components/rhoai-auth
