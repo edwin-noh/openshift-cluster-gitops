@@ -1,9 +1,14 @@
 - op: replace
   path: /spec/generators/0/list/elements
   value:
-    - values:
-        name: github-oauth
-        path: components/cluster-configs/github-oauth/overlays/default
+    # github-oauth is deliberately NOT enabled on a fresh cluster. Its SealedSecret is
+    # sealed against a previous cluster's key, so the controller cannot decrypt it and
+    # Secret/openshift-config/github-oauth-secret is never created. OAuth/cluster then
+    # references a missing secret and the `authentication` ClusterOperator goes Degraded,
+    # breaking console login — a cluster-wide outage, not just a failed Argo app.
+    # Before re-enabling: re-seal against this cluster's key, change mappingMethod from
+    # `lookup` to `claim` (lookup needs User/Identity objects nothing here creates), and
+    # add an `organizations:` restriction.
     - values:
         name: nfs-provisioner
         path: components/cluster-configs/nfs-provisioner/overlays/default

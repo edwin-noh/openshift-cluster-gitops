@@ -37,6 +37,9 @@ metadata:
   name: job-gitops-console-plugin
   annotations:
     argocd.argoproj.io/sync-wave: "10"
+    # Job.spec.template is immutable; without Replace any edit to this manifest makes
+    # the sync fail with "field is immutable" instead of re-running the job.
+    argocd.argoproj.io/sync-options: Replace=true
 spec:
   template:
     spec:

@@ -12,6 +12,11 @@
     - values:
         name: leader-worker-set-operator
         path: components/operators/leader-worker-set/aggregate/overlays/default
+    # MetalLB provides the LoadBalancer Services the RHOAI Gateway API gateways need.
+    # Without it the dashboard/inference gateways stay at EXTERNAL-IP <pending> on KVM.
+    - values:
+        name: metallb-operator
+        path: components/operators/metallb/aggregate/overlays/default
     - values:
         name: nfd-operator
         path: components/operators/nfd/aggregate/overlays/default
@@ -24,9 +29,12 @@
     - values:
         name: openshift-custom-metrics-autoscaler-operator
         path: components/operators/openshift-custom-metrics-autoscaler/aggregate/overlays/default
+    # Subscription only, NOT aggregate/. The aggregate pulls in instance/overlays/default,
+    # which bootstrap/base already applies — two Applications owning the same ArgoCD CR
+    # with selfHeal on makes the tracking annotation ping-pong forever.
     - values:
         name: openshift-gitops-operator
-        path: components/operators/openshift-gitops/aggregate/overlays/latest
+        path: components/operators/openshift-gitops/operator/overlays/latest
     - values:
         name: openshift-jobset-operator
         path: components/operators/openshift-jobset/operator/overlays/stable-v1.0
@@ -42,8 +50,8 @@
     - values:
         name: tempo-operator
         path: components/operators/tempo-operator/operator/overlays/stable
-    # Dropped for this SNO:
+    # Removed from the repo entirely, not just from this list:
     #   cloudnative-pg / openshift-external-secrets / connectivity-link
-    #     - only consumed by the MaaS components, which this overlay does not deploy
+    #     - existed only to back Models-as-a-Service, which this SNO cannot run
     #   kiali
-    #     - RHOAI 3.x has no Service Mesh component; nothing references it
+    #     - RHOAI 3.x has no Service Mesh component; nothing referenced it

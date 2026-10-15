@@ -1,0 +1,7 @@
+# Auth.spec.adminGroups references rhods-admins, but nothing else creates it. Without
+# the group the RHOAI dashboard has no administrators at all.
+kind: Group
+apiVersion: user.openshift.io/v1
+metadata:
+  name: rhods-admins
+users: []  # add users to this list via overlay

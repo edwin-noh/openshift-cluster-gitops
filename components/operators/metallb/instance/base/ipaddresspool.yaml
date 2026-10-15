@@ -1,0 +1,14 @@
+# Pool handed out to `type: LoadBalancer` Services. On a KVM/libvirt SNO there is no
+# cloud load balancer, so without this the RHOAI Gateway API Gateways (dashboard and
+# inference) sit at EXTERNAL-IP <pending> and never become Programmed.
+#
+# The range must be free on the node's L2 segment and outside the DHCP pool.
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+  namespace: metallb-system
+spec:
+  autoAssign: true
+  addresses:
+    - 192.168.31.240-192.168.31.250

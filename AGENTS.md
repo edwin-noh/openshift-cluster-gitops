@@ -18,7 +18,7 @@ Local `kustomize build` passing ≠ cluster updated.
 ## Kustomize layering (how a cluster type is assembled)
 
 A "cluster type/version" is selected by pointing the Argo CD bootstrap Application at a
-`bootstrap/overlays/<cluster>` directory. The chain for each `<cluster>` (e.g. `rhoai-3.4`, `rhoai-3.5`):
+`bootstrap/overlays/<cluster>` directory. The chain for each `<cluster>` (currently only `rhoai-3.5`):
 
 ```
 bootstrap/overlays/<cluster>            → resources: clusters/overlays/<cluster>
@@ -64,18 +64,23 @@ Tooling present: `kustomize` v5.x, `oc`. No `kubectl`.
 
 ```bash
 # Validate ALL overlays build — the primary local test for any manifest change
-for p in bootstrap/overlays/rhoai-3.4 bootstrap/overlays/rhoai-3.5 \
-         clusters/overlays/rhoai-3.4 clusters/overlays/rhoai-3.5 \
-         components/argocd/apps/overlays/rhoai-3.4 components/argocd/apps/overlays/rhoai-3.5 \
-         components/operators/openshift-ai/aggregate/overlays/stable-3.4-nvidia-gpu \
-         components/operators/openshift-ai/aggregate/overlays/eus-3.5-nvidia-gpu; do
+for p in bootstrap/overlays/rhoai-3.5 \
+         clusters/overlays/rhoai-3.5 \
+         components/argocd/apps/overlays/rhoai-3.5 \
+         components/operators/openshift-ai/aggregate/overlays/eus-3.5-nvidia-gpu \
+         components/operators/metallb/aggregate/overlays/default; do
   kustomize build "$p" >/dev/null && echo "OK $p" || echo "FAIL $p"
 done
 
 # Verify placeholders were patched (MUST print 0) and repoURL is consistent
-kustomize build bootstrap/overlays/rhoai-3.4 | grep -c patch-me
 kustomize build bootstrap/overlays/rhoai-3.5 | grep -c patch-me
 kustomize build bootstrap/overlays/rhoai-3.5 | grep -E 'repoURL:' | sort -u
+
+# ApplicationSet list `path:` values are runtime git paths — kustomize build will NOT
+# catch a typo there. Check every referenced component overlay actually exists.
+kustomize build bootstrap/overlays/rhoai-3.5 \
+  | grep -oE 'components/(operators|cluster-configs)/[^ ]+' | sort -u \
+  | while read -r p; do [ -d "$p" ] || echo "MISSING $p"; done
 ```
 
 ## When adding a new cluster type/version overlay

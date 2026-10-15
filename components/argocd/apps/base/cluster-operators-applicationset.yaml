@@ -26,7 +26,11 @@ spec:
           prune: false
           selfHeal: true
         retry:
-          limit: 5
+          # Operand CRs are applied in the same sync as the Subscription that brings
+          # their CRD, and SkipDryRunOnMissingResource only skips the dry run — the real
+          # apply still fails until OLM finishes. limit 5 caps out at ~2.5 min, far
+          # shorter than an operator install, so the first bootstrap pass goes red.
+          limit: 20
           backoff:
             duration: 5s
             factor: 2

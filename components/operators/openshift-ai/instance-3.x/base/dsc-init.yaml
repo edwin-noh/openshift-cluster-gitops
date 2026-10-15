@@ -5,8 +5,11 @@ metadata:
 spec:
   applicationsNamespace: redhat-ods-applications
   monitoring:
-    managementState: Managed
-    metrics: {}
+    # Off in the base. The docs mark metrics.storage.size and .retention as required
+    # when monitoring is Managed, and the base has no sane value for them — enabling it
+    # here produced a DSCI that was Managed with an empty metrics block. The
+    # components-observability component turns it on and supplies the storage spec.
+    managementState: Removed
     namespace: redhat-ods-monitoring
   trustedCABundle:
     customCABundle: ''

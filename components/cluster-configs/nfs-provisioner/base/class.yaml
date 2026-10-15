@@ -6,6 +6,12 @@ metadata:
     argocd.argoproj.io/sync-options: Replace=true
     storageclass.kubernetes.io/is-default-class: "true"
 provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+# Without this the RHOAI dashboard rejects a workbench PVC resize outright. The
+# nfs-subdir provisioner does not actually resize anything (the backing dir has no
+# quota), but the PVC edit is accepted instead of erroring.
+allowVolumeExpansion: true
 parameters:
+  # WARNING: deleting a PVC permanently deletes the backing directory on the NFS
+  # export. Set to `retain` if you want a safety net at the cost of orphaned dirs.
   onDelete: delete
   pathPattern: "${.PVC.namespace}-${.PVC.name}"

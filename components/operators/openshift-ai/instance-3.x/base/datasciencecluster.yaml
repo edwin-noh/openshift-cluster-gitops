@@ -6,10 +6,6 @@ metadata:
   name: default-dsc
 spec:
   components:
-    aigateway:
-      managementState: Removed
-      modelsAsAService:
-        managementState: Removed
     aipipelines:
       managementState: Removed
     dashboard:
@@ -21,15 +17,13 @@ spec:
       rawDeploymentServiceConfig: Headed
       nim:
         managementState: Removed
-      modelsAsService:
-        managementState: Removed
     kueue:
-      managementState: Removed
-    llamastackoperator:
       managementState: Removed
     modelregistry:
       managementState: Removed
       registriesNamespace: rhoai-model-registries
+    ogx:
+      managementState: Removed
     ray:
       managementState: Removed
     trainingoperator:

@@ -1,0 +1,8 @@
+# commonAnnotations below sets argocd.argoproj.io/sync-options on every object, which
+# clobbers the ServerSideApply=true that odhdashboardconfig.yaml sets on itself. The
+# RHOAI operator heavily defaults OdhDashboardConfig (notebookSizes, modelServerSizes,
+# ...), so without SSA Argo's client-side apply fights the operator on every sync.
+# Re-apply both options here.
+- op: replace
+  path: /metadata/annotations/argocd.argoproj.io~1sync-options
+  value: SkipDryRunOnMissingResource=true,ServerSideApply=true
