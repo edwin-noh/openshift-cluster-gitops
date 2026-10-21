@@ -3,4 +3,4 @@ kind: StorageClass
 metadata:
   name: nfs-client
 parameters:
-  pathPattern: "sno-test/${.PVC.namespace}-${.PVC.name}"
+  pathPattern: "rhoai-35/${.PVC.namespace}-${.PVC.name}"
