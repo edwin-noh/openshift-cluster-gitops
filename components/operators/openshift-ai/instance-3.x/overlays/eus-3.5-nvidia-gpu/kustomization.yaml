@@ -23,7 +23,11 @@ components:
   - ../../components/disable-amd-runtimes
   - ../../components/disable-gaudi-runtimes
   - ../../components/disable-ibm-runtimes
-  - ../../components/gateway-inference
+  # The inference Gateway needs a LoadBalancer Service, and MetalLB is disabled on
+  # this SNO, so it would sit at EXTERNAL-IP <pending> forever. It only serves
+  # llm-d/LLMInferenceService (also off here); the dashboard and plain KServe use
+  # Routes. Re-enable together with MetalLB.
+  # - ../../components/gateway-inference
   - ../../components/hardware-profiles-nvidia-gpu
   - ../../components/idle-notebook-culling
   - ../../components/rhoai-auth
