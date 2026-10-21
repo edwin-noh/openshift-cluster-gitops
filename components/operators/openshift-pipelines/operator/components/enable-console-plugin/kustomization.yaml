@@ -1,9 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 
+# No ConsolePlugin here: the Pipelines operator creates and owns
+# pipelines-console-plugin itself (adding spec.proxy), so a copy in git stays
+# OutOfSync forever and selfHeal re-syncs in a loop. The Job only enables it.
 resources:
   - console-plugin-job.yaml
-  - console-plugin.yaml
 
 generatorOptions:
   disableNameSuffixHash: true

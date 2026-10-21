@@ -5,9 +5,11 @@ metadata:
   namespace: cert-manager
   annotations:
     argocd.argoproj.io/sync-wave: "10"
-    # Job.spec.template is immutable; without Replace any edit to this manifest makes
-    # the sync fail with "field is immutable" instead of re-running the job.
-    argocd.argoproj.io/sync-options: Replace=true
+    # Job.spec.template is immutable, so a plain apply of an edited Job fails. Replace alone
+    # is not enough either: it PUTs the manifest, which lacks the server-generated
+    # spec.selector, and every re-sync fails validation. Force makes it delete+create,
+    # so the (idempotent) Job re-runs on each sync.
+    argocd.argoproj.io/sync-options: Force=true,Replace=true
 spec:
   template:
     spec:
