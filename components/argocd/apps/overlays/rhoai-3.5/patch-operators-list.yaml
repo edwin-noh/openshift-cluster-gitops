@@ -1,8 +1,8 @@
 - op: replace
   path: /spec/generators/0/list/elements
   value:
-    # cert-manager must be present before cluster-configs/self-signed-internal-ca
-    # can create its ClusterIssuer/Certificate objects.
+    # cert-manager is a dependency of the Red Hat build of Kueue and RHOAI KServe,
+    # not just of cluster-configs/self-signed-internal-ca (which is disabled).
     - values:
         name: cert-manager-operator
         path: components/operators/cert-manager/operator/overlays/stable-v1

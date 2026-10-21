@@ -19,9 +19,14 @@
     - values:
         name: sealed-secrets
         path: components/cluster-configs/sealed-secrets/overlays/default
-    - values:
-        name: self-signed-internal-ca
-        path: components/cluster-configs/self-signed-internal-ca/overlays/default
+    # self-signed-internal-ca is deliberately NOT enabled. Nothing here requests a
+    # certificate from its ca-issuer (in ai-accelerator its only consumer was the MaaS
+    # Postgres cert, and MaaS is gone), yet it rewrites Proxy/cluster trustedCA, which
+    # rolls out a MachineConfig and can reboot the SNO. Re-enable only once something
+    # actually needs an internal CA.
+    # - values:
+    #     name: self-signed-internal-ca
+    #     path: components/cluster-configs/self-signed-internal-ca/overlays/default
     - values:
         name: user-workload-monitoring
         path: components/cluster-configs/user-workload-monitoring/overlays/default
