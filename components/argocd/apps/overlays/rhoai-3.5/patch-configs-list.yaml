@@ -12,6 +12,10 @@
     - values:
         name: nfs-provisioner
         path: components/cluster-configs/nfs-provisioner/overlays/default
+    # S3-compatible object storage for testing (pipelines artifacts, model storage).
+    - values:
+        name: rustfs
+        path: components/cluster-configs/rustfs/overlays/default
     - values:
         name: sealed-secrets
         path: components/cluster-configs/sealed-secrets/overlays/default

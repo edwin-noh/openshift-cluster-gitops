@@ -14,9 +14,9 @@
         path: components/operators/leader-worker-set/aggregate/overlays/default
     # MetalLB provides the LoadBalancer Services the RHOAI Gateway API gateways need.
     # Without it the dashboard/inference gateways stay at EXTERNAL-IP <pending> on KVM.
-    - values:
-        name: metallb-operator
-        path: components/operators/metallb/aggregate/overlays/default
+    # - values:
+    #     name: metallb-operator
+    #     path: components/operators/metallb/aggregate/overlays/default
     - values:
         name: nfd-operator
         path: components/operators/nfd/aggregate/overlays/default
