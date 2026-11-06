@@ -1,0 +1,13 @@
+# The rhel9/postgresql image includes every *.conf under /opt/app-root/src/postgresql-cfg/
+# at the end of postgresql.conf. The cert/key come from the service-ca serving cert
+# (see service.yaml).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: maas-postgres-cfg
+  namespace: models-as-a-service-db
+data:
+  ssl.conf: |
+    ssl = on
+    ssl_cert_file = '/etc/pgsql-tls/tls.crt'
+    ssl_key_file = '/etc/pgsql-tls/tls.key'

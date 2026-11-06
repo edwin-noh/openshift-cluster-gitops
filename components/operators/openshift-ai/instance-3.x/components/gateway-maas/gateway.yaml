@@ -1,0 +1,47 @@
+# MaaS ingress without MetalLB: maas-gw-options makes the Gateway's Service ClusterIP, and
+# the passthrough Route maas-gateway-route exposes it through the default OpenShift router.
+# Envoy terminates TLS itself, so the listener needs a cert matching maas.apps.<domain>.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: maas-default-gateway
+  namespace: openshift-ingress
+  labels:
+    kuadrant.io/gateway: "true"
+    app.kubernetes.io/name: maas-gateway
+    istio.io/rev: openshift-gateway
+  annotations:
+    opendatahub.io/managed: "false"
+    security.opendatahub.io/authorino-tls-bootstrap: "true"
+    # SSA is required: listener hostname is set at runtime by route-hostname-job, and a
+    # client-side apply would replace the whole listeners list and drop it. NOTE the RHOAI
+    # aggregate's commonAnnotations overwrites this; it is re-applied there.
+    argocd.argoproj.io/sync-options: ServerSideApply=true
+spec:
+  gatewayClassName: data-science-gateway-class
+  infrastructure:
+    parametersRef:
+      group: ""
+      kind: ConfigMap
+      name: maas-gw-options
+  listeners:
+    - name: https
+      # hostname is set to maas.apps.<cluster-domain> by route-hostname-job/patch-route-host.sh
+      port: 443
+      protocol: HTTPS
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              maas.opendatahub.io/gateway-access: "true"
+      tls:
+        # The ingress operator's generated *.apps wildcard cert (lives in openshift-ingress).
+        # ai-accelerator used cert-manager-ingress-cert, which only RHDP clusters provision.
+        # If the default IngressController is given a custom defaultCertificate, point this
+        # at that secret instead.
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: router-certs-default
+        mode: Terminate

@@ -1,0 +1,5 @@
+# Same clobbering as patch-ssa-sync-options.yaml, for non-hook Jobs: they need
+# Force=true,Replace=true because Job.spec.template is immutable (see the Job manifest).
+- op: replace
+  path: /metadata/annotations/argocd.argoproj.io~1sync-options
+  value: SkipDryRunOnMissingResource=true,Force=true,Replace=true

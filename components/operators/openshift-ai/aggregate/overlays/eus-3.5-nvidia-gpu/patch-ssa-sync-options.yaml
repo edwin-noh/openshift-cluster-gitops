@@ -1,0 +1,11 @@
+# commonAnnotations (annotated/) sets argocd.argoproj.io/sync-options on every object, which
+# clobbers the ServerSideApply=true these objects set on themselves:
+# - OdhDashboardConfig: the RHOAI operator heavily defaults it (notebookSizes,
+#   modelServerSizes, ...), so without SSA Argo's client-side apply fights the operator.
+# - Gateway maas-default-gateway: listener hostname is set at runtime by a Job; client-side
+#   apply replaces the whole listeners list and drops it.
+# - MaasTenantConfig: operator-defaulted CR, same reason as OdhDashboardConfig.
+# Re-apply both options here.
+- op: replace
+  path: /metadata/annotations/argocd.argoproj.io~1sync-options
+  value: SkipDryRunOnMissingResource=true,ServerSideApply=true

@@ -9,6 +9,11 @@
     - values:
         name: cluster-observability-operator
         path: components/operators/cluster-observability-operator/operator/overlays/stable
+    # Red Hat Connectivity Link (Kuadrant: Authorino + Limitador) for RHOAI Models-as-a-Service.
+    # The maas overlay also turns on Authorino TLS, which MaaS expects.
+    - values:
+        name: connectivity-link-operator
+        path: components/operators/redhat-connectivity-link/aggregate/overlays/maas
     - values:
         name: leader-worker-set-operator
         path: components/operators/leader-worker-set/aggregate/overlays/default
@@ -51,7 +56,8 @@
         name: tempo-operator
         path: components/operators/tempo-operator/operator/overlays/stable
     # Removed from the repo entirely, not just from this list:
-    #   cloudnative-pg / openshift-external-secrets / connectivity-link
-    #     - existed only to back Models-as-a-Service, which this SNO cannot run
+    #   cloudnative-pg / openshift-external-secrets
+    #     - backed ai-accelerator's MaaS Postgres; here MaaS uses the plain
+    #       openshift-ai instance-3.x/components/maas-postgres instead
     #   kiali
     #     - RHOAI 3.x has no Service Mesh component; nothing referenced it

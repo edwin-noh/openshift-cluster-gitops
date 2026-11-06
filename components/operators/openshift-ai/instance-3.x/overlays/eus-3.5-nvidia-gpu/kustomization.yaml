@@ -5,7 +5,12 @@ resources:
   - ../../base
 
 components:
-  # MaaS is not supported on this SNO and has been removed from the repo entirely.
+  # Models-as-a-Service. Needs the redhat-connectivity-link operator (aggregate/overlays/maas)
+  # and user-workload-monitoring. No MetalLB needed: gateway-maas exposes the gateway through
+  # a ClusterIP Service + passthrough Route on the default router, TLS via router-certs-default.
+  - ../../components/components-aigateway-maas
+  - ../../components/gateway-maas
+  - ../../components/maas-postgres
   - ../../components/components-aipipelines
   # - ../../components/components-feast
   - ../../components/components-kserve
@@ -25,8 +30,8 @@ components:
   - ../../components/disable-ibm-runtimes
   # The inference Gateway needs a LoadBalancer Service, and MetalLB is disabled on
   # this SNO, so it would sit at EXTERNAL-IP <pending> forever. It only serves
-  # llm-d/LLMInferenceService (also off here); the dashboard and plain KServe use
-  # Routes. Re-enable together with MetalLB.
+  # llm-d/LLMInferenceService without MaaS; the dashboard, plain KServe and MaaS
+  # (maas-default-gateway) use Routes. Re-enable together with MetalLB.
   # - ../../components/gateway-inference
   - ../../components/hardware-profiles-nvidia-gpu
   - ../../components/idle-notebook-culling

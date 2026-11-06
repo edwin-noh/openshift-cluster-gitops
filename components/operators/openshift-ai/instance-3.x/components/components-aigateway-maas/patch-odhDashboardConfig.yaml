@@ -1,0 +1,12 @@
+apiVersion: opendatahub.io/v1alpha
+kind: OdhDashboardConfig
+metadata:
+  name: odh-dashboard-config
+  namespace: redhat-ods-applications
+spec:
+  dashboardConfig:
+    # genAiStudio is already set by components-ogx.
+    modelAsService: true
+    maasAuthPolicies: true
+    # Technology Preview in 3.5.
+    externalModels: true

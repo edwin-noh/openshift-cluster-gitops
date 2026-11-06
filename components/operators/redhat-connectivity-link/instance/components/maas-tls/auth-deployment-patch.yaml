@@ -1,0 +1,17 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: authorino
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,ServerSideApply=true
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  template:
+    spec:
+      containers:
+        - name: authorino
+          env:
+            - name: SSL_CERT_FILE
+              value: /etc/ssl/certs/openshift-service-ca/service-ca-bundle.crt
+            - name: REQUESTS_CA_BUNDLE
+              value: /etc/ssl/certs/openshift-service-ca/service-ca-bundle.crt

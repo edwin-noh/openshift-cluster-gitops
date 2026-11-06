@@ -1,0 +1,18 @@
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaasTenantConfig
+metadata:
+  name: default-tenant
+  # Created by the RHOAI operator once aigateway.modelsAsAService is Managed; the
+  # Application's sync retry covers the gap until the CRD and namespace exist.
+  namespace: models-as-a-service
+  annotations:
+    # NOTE the RHOAI aggregate's commonAnnotations overwrites this; it is re-applied there.
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,ServerSideApply=true
+spec:
+  telemetry:
+    enabled: true
+    metrics:
+      captureGroup: false
+      captureModelUsage: true
+      captureOrganization: true
+      captureUser: true

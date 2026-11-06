@@ -8,4 +8,16 @@ patches:
   - target:
       kind: OdhDashboardConfig
       name: odh-dashboard-config
-    path: patch-odhdashboardconfig-sync-options.yaml
+    path: patch-ssa-sync-options.yaml
+  - target:
+      kind: Gateway
+      name: maas-default-gateway
+    path: patch-ssa-sync-options.yaml
+  - target:
+      kind: MaasTenantConfig
+      name: default-tenant
+    path: patch-ssa-sync-options.yaml
+  - target:
+      kind: Job
+      name: job-maas-db-credentials
+    path: patch-job-sync-options.yaml

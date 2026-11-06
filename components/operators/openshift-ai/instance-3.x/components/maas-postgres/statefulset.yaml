@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: maas-postgres
+  namespace: models-as-a-service-db
+spec:
+  serviceName: maas-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: maas-postgres
+  template:
+    metadata:
+      labels:
+        app: maas-postgres
+    spec:
+      containers:
+        - name: postgresql
+          image: registry.redhat.io/rhel9/postgresql-16:latest
+          envFrom:
+            - secretRef:
+                name: maas-postgres-credentials
+          ports:
+            - name: postgresql
+              containerPort: 5432
+          readinessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+            initialDelaySeconds: 5
+            timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+                - --live
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/pgsql/data
+            - name: cfg
+              mountPath: /opt/app-root/src/postgresql-cfg
+            - name: tls
+              mountPath: /etc/pgsql-tls
+              readOnly: true
+      volumes:
+        - name: cfg
+          configMap:
+            name: maas-postgres-cfg
+        - name: tls
+          secret:
+            secretName: maas-postgres-tls
+            # PostgreSQL refuses a key readable by others; root-owned 0640 is accepted and
+            # the pod's fsGroup (restricted-v2 SCC) gives the postgres user group read.
+            defaultMode: 0640
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        # storageClassName omitted on purpose: uses the cluster default (nfs-client).
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
