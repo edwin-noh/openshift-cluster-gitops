@@ -10,7 +10,9 @@ client --TLS(SNI maas.apps.<domain>)--> OpenShift router (passthrough Route maas
 ```
 
 - `route-hostname-job` (Argo CD PostSync hook) derives `<cluster-domain>` from the console URL
-  and sets it on the Route `spec.host` and every Gateway listener `hostname`.
+  and sets it on the Route `spec.host` and every Gateway listener `hostname`. openshift-ingress is
+  default-deny on OCP 4.22+ (`openshift-ingress-deny-all`), so `networkpolicy.yaml` opens DNS + API
+  egress for the Job pod only.
 - `router-certs-default` is signed by the ingress operator CA, so clients must trust that CA
   (or use `-k` when testing), like the console.
 

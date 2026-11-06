@@ -5,9 +5,13 @@ metadata:
   namespace: openshift-ingress
   annotations:
     argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
 spec:
   template:
+    metadata:
+      labels:
+        # Selected by networkpolicy.yaml (openshift-ingress is default-deny on OCP 4.22+).
+        app: job-patch-route-host
     spec:
       containers:
         - name: minion
