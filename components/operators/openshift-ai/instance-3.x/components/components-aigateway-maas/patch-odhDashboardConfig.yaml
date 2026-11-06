@@ -7,6 +7,7 @@ spec:
   dashboardConfig:
     # genAiStudio is already set by components-ogx.
     modelAsService: true
-    maasAuthPolicies: true
+    # maasAuthPolicies is NOT set: deprecated in rhods-operator 3.5.2, whose CRD has a CEL
+    # rule rejecting any change to it ("must be removed or left unchanged").
     # Technology Preview in 3.5.
     externalModels: true

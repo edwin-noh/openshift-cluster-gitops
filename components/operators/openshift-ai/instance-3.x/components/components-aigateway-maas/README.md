@@ -6,7 +6,7 @@ Turns on RHOAI 3.5 Models-as-a-Service:
   (3.5 path; the older `kserve.modelsAsService` is a legacy field)
 - `redhat-ai-gateway-infra` namespace (MaaS infra namespace, allowed on `maas-default-gateway`)
 - `MaasTenantConfig default-tenant` (telemetry on)
-- Dashboard flags: `modelAsService`, `maasAuthPolicies`, `externalModels`
+- Dashboard flags: `modelAsService`, `externalModels` (`maasAuthPolicies` is deprecated in 3.5.2 and must not be set)
 
 Use together with:
 
