@@ -3,7 +3,10 @@ kind: Auth
 metadata:
   name: auth
 spec:
+  # kbl-ops-admins / kbl-ai-developers: model-lifecycle 리포(deploy/ops/platform/groups.yaml)가 관리하는 Group.
+  # 역할 분리 PoC 동안만 system:authenticated 대신 AI팀 그룹으로 제한한다
   adminGroups:
     - rhods-admins
+    - kbl-ops-admins
   allowedGroups:
-    - 'system:authenticated'
+    - kbl-ai-developers
