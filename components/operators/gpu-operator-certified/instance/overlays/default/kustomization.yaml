@@ -6,3 +6,6 @@ resources:
 
 components:
   - ../../components/schedule-on-tainted-nodes
+  # GPU 1장(RTX 3060 12GB)을 2개로 나눠 노출: kblife rhoai-serving-gitops 의 MaaS(LLMInferenceService)와
+  # RawDeployment(InferenceService) 소형 모델을 동시에 띄우기 위함. 메모리 격리 없음 (RHOAI 3.5 Working with accelerators, "Enable GPU time slicing")
+  - ../../components/time-sliced-2
