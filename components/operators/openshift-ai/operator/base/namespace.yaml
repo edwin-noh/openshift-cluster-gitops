@@ -4,5 +4,7 @@ metadata:
   annotations:
     openshift.io/display-name: "Red Hat OpenShift AI"
   labels:
+    # CPU request = limit * 10% (see components/operators/cluster-resource-override)
+    clusterresourceoverrides.admission.autoscaling.openshift.io/enabled: "true"
     openshift.io/cluster-monitoring: 'true'
   name: redhat-ods-operator

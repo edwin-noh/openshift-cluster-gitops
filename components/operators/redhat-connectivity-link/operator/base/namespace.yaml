@@ -1,4 +1,7 @@
 kind: Namespace
 apiVersion: v1
 metadata:
+  labels:
+    # CPU request = limit * 10% (see components/operators/cluster-resource-override)
+    clusterresourceoverrides.admission.autoscaling.openshift.io/enabled: "true"
   name: kuadrant-system

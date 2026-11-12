@@ -6,6 +6,12 @@
     - values:
         name: cert-manager-operator
         path: components/operators/cert-manager/operator/overlays/stable-v1
+    # CPU-only overcommit (request = limit * 10%) for namespaces labelled
+    # clusterresourceoverrides.admission.autoscaling.openshift.io/enabled=true.
+    # SNO CPU requests were ~95% with ~6% real usage. Admission webhook only, no reboot.
+    - values:
+        name: cluster-resource-override-operator
+        path: components/operators/cluster-resource-override/aggregate/overlays/default
     - values:
         name: cluster-observability-operator
         path: components/operators/cluster-observability-operator/operator/overlays/stable

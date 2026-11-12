@@ -1,0 +1,8 @@
+# Must NOT carry the clusterresourceoverrides...enabled label: the webhook's own pods
+# would then depend on the webhook to be admitted (deadlock after an SNO reboot).
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    openshift.io/display-name: "Cluster Resource Override Operator"
+  name: clusterresourceoverride-operator

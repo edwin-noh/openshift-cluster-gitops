@@ -1,0 +1,19 @@
+# CPU-only overcommit for the SNO. The scheduler packs by *requests*; on this node CPU
+# requests sit at ~95% while real usage is ~6%, so new pods (e.g. a 2-CPU vLLM predictor)
+# fail with "Insufficient cpu". For pods created in namespaces labelled
+#   clusterresourceoverrides.admission.autoscaling.openshift.io/enabled: "true"
+# the admission webhook rewrites  cpu request = cpu limit * 10%  (containers without a
+# CPU limit are left alone). Memory is deliberately NOT overridden: memory usage is
+# already above memory requests, so lowering them would invite OOM/eviction.
+# Only affects pods created after the label is set — restart existing pods to apply.
+# No MachineConfig / node reboot involved.
+apiVersion: operator.autoscaling.openshift.io/v1
+kind: ClusterResourceOverride
+metadata:
+  name: cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  podResourceOverride:
+    spec:
+      cpuRequestToLimitPercent: 10

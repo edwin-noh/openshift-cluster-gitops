@@ -5,4 +5,6 @@ metadata:
   annotations:
     openshift.io/display-name: "Red Hat Kueue Operator"
   labels:
+    # CPU request = limit * 10% (see components/operators/cluster-resource-override)
+    clusterresourceoverrides.admission.autoscaling.openshift.io/enabled: "true"
     openshift.io/cluster-monitoring: 'true'
