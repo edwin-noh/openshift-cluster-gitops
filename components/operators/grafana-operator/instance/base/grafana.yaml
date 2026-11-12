@@ -1,0 +1,123 @@
+# Based on gitops-catalog/grafana-operator/base/instance, with these changes:
+#  - oauth-proxy image from registry.redhat.io instead of quay.io/openshift/origin-*
+#  - anonymous auth OFF; auth.proxy only trusts headers from localhost (the sidecar),
+#    so an in-cluster client hitting :3000 directly cannot spoof X-Forwarded-User
+#  - small resource requests (SNO is CPU-request constrained)
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  labels:
+    instance: grafana
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  route:
+    spec:
+      port:
+        targetPort: https
+      tls:
+        termination: reencrypt
+        insecureEdgeTerminationPolicy: Redirect
+      to:
+        kind: Service
+        name: grafana-service
+        weight: 100
+      wildcardPolicy: None
+  service:
+    metadata:
+      annotations:
+        service.beta.openshift.io/serving-cert-secret-name: grafana-tls
+    spec:
+      ports:
+        - name: https
+          port: 9091
+          protocol: TCP
+          targetPort: https
+  client:
+    preferIngress: false
+  deployment:
+    spec:
+      template:
+        spec:
+          serviceAccountName: grafana-sa
+          volumes:
+            - name: grafana-tls
+              secret:
+                secretName: grafana-tls
+            - name: grafana-proxy
+              secret:
+                secretName: grafana-proxy
+            - name: ocp-injected-certs
+              configMap:
+                name: ocp-injected-certs
+          containers:
+            - name: grafana
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+            - name: grafana-proxy
+              image: registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:v4.22
+              args:
+                - -provider=openshift
+                - -pass-basic-auth=false
+                - -https-address=:9091
+                - -http-address=
+                - -email-domain=*
+                - -upstream=http://localhost:3000
+                - '-openshift-sar={"resource": "namespaces", "verb": "get"}'
+                - '-openshift-delegate-urls={"/": {"resource": "namespaces", "verb": "get"}}'
+                - -tls-cert=/etc/tls/private/tls.crt
+                - -tls-key=/etc/tls/private/tls.key
+                - -client-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+                - -cookie-secret-file=/etc/proxy/secrets/session_secret
+                - -openshift-service-account=grafana-sa
+                - -openshift-ca=/etc/pki/tls/cert.pem
+                - -openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                - -openshift-ca=/etc/proxy/certs/ca-bundle.crt
+                - -skip-auth-regex=^/metrics
+              ports:
+                - containerPort: 9091
+                  name: https
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              volumeMounts:
+                - mountPath: /etc/tls/private
+                  name: grafana-tls
+                  readOnly: true
+                - mountPath: /etc/proxy/secrets
+                  name: grafana-proxy
+                  readOnly: true
+                - mountPath: /etc/proxy/certs
+                  name: ocp-injected-certs
+                  readOnly: true
+  config:
+    log:
+      mode: console
+    auth:
+      disable_login_form: "true"
+      disable_signout_menu: "true"
+    auth.anonymous:
+      enabled: "false"
+    # kept on for the operator, which provisions datasources/dashboards over the
+    # in-cluster :3000 port with the generated admin credentials
+    auth.basic:
+      enabled: "true"
+    auth.proxy:
+      enabled: "true"
+      header_name: X-Forwarded-User
+      header_property: username
+      auto_sign_up: "true"
+      enable_login_token: "false"
+      whitelist: 127.0.0.1, ::1
+    users:
+      auto_assign_org_role: Editor

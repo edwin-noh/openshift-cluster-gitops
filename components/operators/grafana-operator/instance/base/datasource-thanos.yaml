@@ -1,0 +1,38 @@
+# thanos-querier federates platform Prometheus (DCGM GPU metrics) and user-workload
+# Prometheus (vLLM ServiceMonitors), so one datasource covers both.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: prometheus
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  instanceSelector:
+    matchLabels:
+      instance: grafana
+  valuesFrom:
+    - targetPath: secureJsonData.httpHeaderValue1
+      valueFrom:
+        secretKeyRef:
+          name: grafana-sa-token
+          key: token
+    - targetPath: secureJsonData.tlsCACert
+      valueFrom:
+        configMapKeyRef:
+          name: openshift-service-ca
+          key: service-ca.crt
+  datasource:
+    name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    isDefault: true
+    editable: false
+    url: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+    jsonData:
+      httpHeaderName1: Authorization
+      tlsAuthWithCACert: true
+      timeInterval: 30s
+    secureJsonData:
+      httpHeaderValue1: Bearer ${token}
+      tlsCACert: ${service-ca.crt}

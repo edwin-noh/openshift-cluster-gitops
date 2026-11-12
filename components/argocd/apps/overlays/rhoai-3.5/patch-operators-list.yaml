@@ -20,6 +20,11 @@
     - values:
         name: connectivity-link-operator
         path: components/operators/redhat-connectivity-link/aggregate/overlays/maas
+    # Standalone Grafana (oauth-proxy login) for vLLM + DCGM GPU dashboards, reading
+    # thanos-querier. Community operator; independent of RHOAI's built-in Perses.
+    - values:
+        name: grafana-operator
+        path: components/operators/grafana-operator/aggregate/overlays/default
     - values:
         name: leader-worker-set-operator
         path: components/operators/leader-worker-set/aggregate/overlays/default

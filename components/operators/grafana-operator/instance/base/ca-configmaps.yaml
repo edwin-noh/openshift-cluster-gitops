@@ -1,0 +1,15 @@
+# Cluster trusted CA bundle, for oauth-proxy talking to the OAuth server.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ocp-injected-certs
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"
+---
+# Service CA, for the datasource to verify thanos-querier's serving cert.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openshift-service-ca
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"

@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: grafana
+
+resources:
+  - serviceaccount.yaml
+  - rbac.yaml
+  - grafana-sa-token.yaml
+  - ca-configmaps.yaml
+  # oauth-proxy cookie secret, sealed against THIS cluster's sealed-secrets key.
+  # After a cluster reinstall the controller cannot decrypt it (same failure mode as
+  # github-oauth) and the proxy container will not start: re-seal with
+  #   openssl rand -base64 32 | tr -d '\n' | kubectl create secret generic grafana-proxy \
+  #     -n grafana --from-file=session_secret=/dev/stdin --dry-run=client -o yaml \
+  #   | kubeseal --cert <cert.pem> -o yaml
+  # (cert.pem: oc get --raw /api/v1/namespaces/sealed-secrets/services/http:sealed-secrets-controller:8080/proxy/v1/cert.pem)
+  - grafana-proxy-sealedsecret.yaml
+  - grafana.yaml
+  - datasource-thanos.yaml
+  - dashboards.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: grafana-dashboard-vllm
+    files:
+      - vllm.json=dashboards/vllm.json
+  - name: grafana-dashboard-dcgm
+    files:
+      - dcgm.json=dashboards/dcgm.json
