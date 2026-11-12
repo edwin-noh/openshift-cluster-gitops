@@ -1,7 +1,12 @@
 # Dashboard JSON is vendored under dashboards/ (no runtime fetch from grafana.com/GitHub).
 #  - vllm.json: vllm-project/vllm examples/observability/prometheus_grafana/grafana.json
 #    (queries checked against the RHAIIS vLLM metric names on this cluster)
-#  - dcgm.json: NVIDIA DCGM Exporter Dashboard, grafana.com id 12239
+#  - dcgm.json: NVIDIA/dcgm-exporter grafana/dcgm-exporter-dashboard.json at tag 4.8.4,
+#    matching the GPU Operator's exporter image (dcgm-exporter:4.6.1-4.8.4). Do NOT take
+#    it from main: from exporter 4.9.0 the dashboard uses unit-suffixed metric names
+#    (DCGM_FI_DEV_GPU_UTIL_RATIO, ..._TEMP_CELSIUS, ...) that 4.8.x does not emit, so
+#    every panel goes empty. Bump this file together with the GPU Operator's exporter.
+#    Tensor Core panel stays empty on GeForce GPUs (no DCGM_FI_PROF_* metrics).
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
@@ -31,6 +36,5 @@ spec:
   configMapRef:
     name: grafana-dashboard-dcgm
     key: dcgm.json
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Prometheus
+  # no __inputs in this version: panels use the $datasource variable, which defaults
+  # to the default datasource (Prometheus / thanos-querier)
