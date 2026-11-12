@@ -14,6 +14,10 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
+  # Webhook defaults to 2 replicas with *required* hostname anti-affinity: the 2nd pod
+  # can never schedule on an SNO, so the CR never goes Available.
+  deploymentOverrides:
+    replicas: 1
   podResourceOverride:
     spec:
       cpuRequestToLimitPercent: 10
