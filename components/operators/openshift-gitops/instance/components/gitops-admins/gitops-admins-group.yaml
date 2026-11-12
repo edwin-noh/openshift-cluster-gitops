@@ -2,4 +2,6 @@ kind: Group
 apiVersion: user.openshift.io/v1
 metadata:
   name: gitops-admins
-users: []  # add users to this list via overlay
+# Argo CD role:admin (ArgoCD CR rbac: g, gitops-admins, role:admin). 'Log in via OpenShift' 사용자의 OpenShift Group 으로 매핑된다
+users:
+  - edwin-noh
