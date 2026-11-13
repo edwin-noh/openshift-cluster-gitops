@@ -1,6 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 
+resources:
+  - uiplugin-distributed-tracing.yaml
+  - traces-reader-rbac.yaml
+
 patches:
   - path: patch-dsc-init.yaml
     target:

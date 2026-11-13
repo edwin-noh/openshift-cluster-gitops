@@ -23,6 +23,24 @@ their example. On a single node backed by NFS this is worth shrinking:
 - The nfs-subdir provisioner enforces no quota, so `50Gi` is a nominal number; it will
   happily fill the export.
 
+## Viewing traces
+
+Traces land in the `data-science-tempomonolithic` TempoMonolithic in
+`redhat-ods-monitoring` (apps send OTLP to `data-science-collector` on 4317/4318).
+This component also adds:
+
+- `UIPlugin distributed-tracing` (Cluster Observability Operator): enables the console
+  **Observe -> Traces** page. Pick `redhat-ods-monitoring / data-science-tempomonolithic`
+  and tenant `redhat-ods-monitoring`.
+- `ClusterRole/Binding rhoai-traces-reader`: the Tempo runs in `openshift` multitenancy
+  mode, so reading the tenant needs `get` on `tempo.grafana.com/redhat-ods-monitoring`
+  (resourceName `traces`). Bound to the RHOAI admin groups (`rhods-admins`,
+  `kbl-ai-ops`); cluster-admin can always read. Add groups here to widen access.
+
+Kiali is not needed: it is a Service Mesh console, and RHOAI 3.x has no Service Mesh.
+The RHOAI docs only require COO + Tempo + OpenTelemetry and suggest Grafana or Jaeger
+as external viewers.
+
 ## Usage
 
 This component can be added to a base by adding the `components` section to your

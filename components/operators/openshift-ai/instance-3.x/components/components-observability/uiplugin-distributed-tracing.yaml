@@ -1,0 +1,10 @@
+# Console "Observe -> Traces" page (Cluster Observability Operator UI plugin) for the
+# TempoMonolithic that the DSCI traces setting deploys in redhat-ods-monitoring.
+# COO creates the ConsolePlugin and enables it in consoles.operator.openshift.io itself.
+# The name is fixed by COO for this plugin type.
+apiVersion: observability.openshift.io/v1alpha1
+kind: UIPlugin
+metadata:
+  name: distributed-tracing
+spec:
+  type: DistributedTracing
