@@ -1,0 +1,14 @@
+# Console "Observe -> Dashboards (Perses)" (Cluster Observability Operator UI plugin, Perses GA since COO 1.5).
+# COO deploys its own Perses instance for the console and lists PersesDashboard CRs per project
+# (the user sees the projects they can access). Custom dashboards (e.g. kblife-rhoai/observability)
+# are PersesDashboard + PersesDatasource CRs in a project.
+# The name is fixed by COO for this plugin type.
+apiVersion: observability.openshift.io/v1alpha1
+kind: UIPlugin
+metadata:
+  name: monitoring
+spec:
+  type: Monitoring
+  monitoring:
+    perses:
+      enabled: true

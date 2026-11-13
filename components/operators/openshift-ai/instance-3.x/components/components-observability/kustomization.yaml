@@ -3,6 +3,7 @@ kind: Component
 
 resources:
   - uiplugin-distributed-tracing.yaml
+  - uiplugin-monitoring.yaml
   - traces-rbac.yaml
 
 patches:

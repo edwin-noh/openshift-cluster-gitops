@@ -40,6 +40,14 @@ This component also adds:
   - `rhoai-traces-reader` -> groups `rhods-admins`, `kbl-ai-ops` (cluster-admin can
     always read). Add groups here to widen access.
 
+## Dashboards (Perses)
+
+`UIPlugin monitoring` with `perses.enabled: true` (COO 1.5+, GA) adds the console
+**Observe -> Dashboards (Perses)** page. COO runs a separate Perses for the console; the
+RHOAI-deployed `data-science-perses` in `redhat-ods-monitoring` keeps serving the RHOAI
+dashboard tabs. Custom dashboards are `PersesDashboard` + `PersesDatasource` CRs in a
+project (see `kblife-rhoai/observability`).
+
 Kiali is not needed: it is a Service Mesh console, and RHOAI 3.x has no Service Mesh.
 The RHOAI docs only require COO + Tempo + OpenTelemetry and suggest Grafana or Jaeger
 as external viewers.
