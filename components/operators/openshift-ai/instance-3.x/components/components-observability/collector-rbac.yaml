@@ -1,0 +1,34 @@
+# The RHOAI OTel collector's target allocator (SA data-science-collector-collector) runs a
+# metadata-only Secret informer in its own namespace; RHOAI 3.5 does not grant it, so the
+# informer fails forever with "cannot list secrets ... in the namespace redhat-ods-monitoring".
+# Scoped to redhat-ods-monitoring only. Reading the credential Secrets that ServiceMonitors
+# in other namespaces reference (e.g. the llm-d EPP metrics reader token) is granted per
+# namespace with a resourceNames-limited Role, next to those namespaces
+# (rhoai-serving-gitops ops/kbl-maas/41-rbac-rhoai-monitoring.yaml).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rhoai-collector-secrets-metadata
+  namespace: redhat-ods-monitoring
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rhoai-collector-secrets-metadata
+  namespace: redhat-ods-monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rhoai-collector-secrets-metadata
+subjects:
+  - kind: ServiceAccount
+    name: data-science-collector-collector
+    namespace: redhat-ods-monitoring

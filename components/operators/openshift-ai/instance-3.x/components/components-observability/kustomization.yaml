@@ -5,6 +5,7 @@ resources:
   - uiplugin-distributed-tracing.yaml
   - uiplugin-monitoring.yaml
   - traces-rbac.yaml
+  - collector-rbac.yaml
 
 patches:
   - path: patch-dsc-init.yaml

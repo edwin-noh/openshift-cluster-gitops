@@ -40,6 +40,14 @@ This component also adds:
   - `rhoai-traces-reader` -> groups `rhods-admins`, `kbl-ai-ops` (cluster-admin can
     always read). Add groups here to widen access.
 
+- `collector-rbac.yaml`: `list/watch secrets` in `redhat-ods-monitoring` for the collector's
+  target allocator (its Secret metadata informer). Not granted by RHOAI 3.5. ServiceMonitors in
+  other namespaces that authenticate with a Secret (the llm-d EPP `kserve-llm-isvc-scheduler`
+  uses `kserve-metrics-reader-sa-secret`) also need a `get` on that Secret in their namespace,
+  or the target allocator drops them as `InvalidConfiguration` (empty `inference_pool_*` /
+  `inference_model_*` panels in the LLM dashboards). That Role lives with the namespace
+  (rhoai-serving-gitops `ops/kbl-maas/41-rbac-rhoai-monitoring.yaml`).
+
 ## Dashboards (Perses)
 
 `UIPlugin monitoring` with `perses.enabled: true` (COO 1.5+, GA) adds the console
