@@ -32,10 +32,13 @@ This component also adds:
 - `UIPlugin distributed-tracing` (Cluster Observability Operator): enables the console
   **Observe -> Traces** page. Pick `redhat-ods-monitoring / data-science-tempomonolithic`
   and tenant `redhat-ods-monitoring`.
-- `ClusterRole/Binding rhoai-traces-reader`: the Tempo runs in `openshift` multitenancy
-  mode, so reading the tenant needs `get` on `tempo.grafana.com/redhat-ods-monitoring`
-  (resourceName `traces`). Bound to the RHOAI admin groups (`rhods-admins`,
-  `kbl-ai-ops`); cluster-admin can always read. Add groups here to widen access.
+- `traces-rbac.yaml`: the Tempo runs in `openshift` multitenancy mode, where the gateway
+  checks `create` (write) / `get` (read) on `tempo.grafana.com/redhat-ods-monitoring`
+  (resourceName `traces`). RHOAI 3.5 grants neither, so without this file the collector's
+  `otlp/tempo` exporter fails with `PermissionDenied: forbidden` and drops every span.
+  - `rhoai-traces-writer` -> SA `redhat-ods-monitoring/data-science-collector-collector`
+  - `rhoai-traces-reader` -> groups `rhods-admins`, `kbl-ai-ops` (cluster-admin can
+    always read). Add groups here to widen access.
 
 Kiali is not needed: it is a Service Mesh console, and RHOAI 3.x has no Service Mesh.
 The RHOAI docs only require COO + Tempo + OpenTelemetry and suggest Grafana or Jaeger
