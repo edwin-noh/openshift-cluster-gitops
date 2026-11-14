@@ -12,4 +12,8 @@ configMapGenerator:
   - name: nvidia-dcgm-exporter-dashboard
     namespace: openshift-config-managed
     files:
-      - https://github.com/NVIDIA/dcgm-exporter/raw/main/grafana/dcgm-exporter-dashboard.json
+      # 태그로 고정한다. main 은 4.9.0 부터 메트릭 이름에 단위가 붙어(DCGM_FI_DEV_GPU_TEMP_CELSIUS 등)
+      # 설치된 exporter(4.6.1-4.8.4, 예전 이름 DCGM_FI_DEV_GPU_TEMP 등)와 맞지 않는다.
+      # Argo CD 는 렌더링할 때마다 이 URL 을 다시 받으므로 main 이면 upstream 변경이 바로 반영된다.
+      # GPU Operator / dcgm-exporter 를 올릴 때 이 태그도 같이 올린다
+      - https://github.com/NVIDIA/dcgm-exporter/raw/4.8.4/grafana/dcgm-exporter-dashboard.json
