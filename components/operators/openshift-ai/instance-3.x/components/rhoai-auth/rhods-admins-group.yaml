@@ -1,7 +1,10 @@
 # Auth.spec.adminGroups references rhods-admins, but nothing else creates it. Without
 # the group the RHOAI dashboard has no administrators at all.
+# Dashboard admin is decided by adminGroups membership, not by cluster-admin RBAC,
+# so the cluster's admin account is listed here explicitly.
 kind: Group
 apiVersion: user.openshift.io/v1
 metadata:
   name: rhods-admins
-users: []  # add users to this list via overlay
+users:
+  - edwin-noh
